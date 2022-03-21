@@ -1,0 +1,67 @@
+---
+title: "Obj2"
+author: "Caroline Sutton"
+date: "21/03/2022"
+output: html_document
+---
+# Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Load libraries
+library(tidyverse)
+library(knitr)
+library(dplyr)
+library(Rmisc)
+library(ggplot2)
+```
+
+
+## Read in data
+```{r obj2 data}
+# read in length data
+lengths <- read_csv("data/Obj2_starlengths.csv")
+Obs <- read_csv("data/Obj2.csv")
+
+```
+
+
+## Length data
+```{r Length} 
+lengths %>% 
+  ggplot(aes(x = length_1)) +
+  geom_histogram(bins = 3)
+
+lengths %>% 
+  ggplot(aes(x = length_2)) +
+  geom_histogram(bins = 9) 
+```
+## Observations
+
+```{r Obs}
+
+Obs1 <- Obs %>% 
+  dplyr::rename(Total='Nos Stars-Tot') %>% 
+  dplyr::rename(PlatePos = `Plate Position`) %>% 
+  dplyr::mutate(across(where(is.numeric), ~replace(., is.na(.), 0)))%>% 
+
+
+  dplyr::select(-Total) %>% 
+  dplyr::group_by(Obs,Tank,PlatePos, Substrate) %>% 
+  dplyr::summarise(fd = sum(Nos_F), Nfd =sum(Nos_NF)) %>% 
+  pivot_longer(cols = c("Nfd","fd"), names_to = "feeding")
+
+# summary
+Obs_sum <- summarySE(Obs1, measurevar = "value", groupvars = c("Obs","Substrate","feeding")) 
+
+```
+
+#  counts <- Obs1 %>% 
+ #   ggplot(aes(x = Obs, y =Nos,
+             colour= Substrate))+
+ # geom_point()
+
+ # counts
+  
+ggplot(Obs1, aes(x = Obs, y= value, colour= feeding))+
+  geom_bar(stat = "identity")
+```
