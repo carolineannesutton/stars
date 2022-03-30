@@ -42,21 +42,22 @@ lengths %>%
 Obs1 <- Obs %>% 
   dplyr::rename(Total='Nos Stars-Tot') %>% 
   dplyr::rename(PlatePos = `Plate Position`) %>% 
+  dplyr::rename(Time = `Time of Day`) %>% 
   dplyr::mutate(across(where(is.numeric), ~replace(., is.na(.), 0)))%>% 
 
 
   dplyr::select(-Total) %>% 
-  dplyr::group_by(Obs,Tank,PlatePos, Substrate) %>% 
+  dplyr::group_by(Obs,Tank,PlatePos, Substrate,Time) %>% 
   dplyr::summarise(fd = sum(Nos_F), Nfd =sum(Nos_NF)) %>% 
   pivot_longer(cols = c("Nfd","fd"), names_to = "feeding")
 
 # summary
-Obs_sum <- summarySE(Obs1, measurevar = "value", groupvars = c("Obs","Substrate","feeding")) 
+Obs_sum <- summarySE(Obs1, measurevar = "value", groupvars = c("Obs","Substrate","Time","feeding")) 
 
 # summary graph
 pd <- position_dodge(0.6) # move position horizontally b/c of overlap
 
-fobs2 <- ggplot(Obs_sum, aes(x = Obs,y = value)) +
+fobs2 <- ggplot(Obs_sum, aes(x = Obs,y = value, colour= feeding)) +
   geom_errorbar(aes(ymin = value - ci, ymax= value + ci),
                 width =.7, position = pd) +
   geom_point( position = pd, size = 2)+
@@ -64,7 +65,7 @@ fobs2 <- ggplot(Obs_sum, aes(x = Obs,y = value)) +
   xlab("Observations for P.exigua substrate trials")+
   ylab("Average number of stars (n)")+
   scale_y_continuous(breaks = seq(-5,5,1),limits = c(-5,5))+
-  scale_x_continuous(limits = c(1,20), breaks = seq(1,20,2))+
+  scale_x_continuous(limits = c(1,20), breaks = seq(2,20,2))+
   theme_bw()+
   facet_wrap(~Substrate)
   #theme(legend.position = c(.95, .05),
